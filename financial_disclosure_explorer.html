@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Listed Entity Disclosure Framework</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Professional Finance (Slate, Indigo, and Soft Amber) -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .active-tab {
+            border-bottom: 3px solid #6366f1;
+            color: #6366f1;
+        }
+
+        .pyramid-level {
+            clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+            transition: all 0.3s ease;
+        }
+
+        .pyramid-level:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Application Structure Plan: 
+        1. Navigation: Horizontal sector switcher (NBFC vs Real Estate) to mirror the report's primary division.
+        2. Dashboard View: Thematic sections (Statutory, Regulatory, Accounting) instead of a simple linear report.
+        3. Interactive Flow: 
+            - 'NBFC Explorer' focuses on Liquidity, ECL Staging, and RBI SBR Layers.
+            - 'Real Estate Explorer' focuses on Ind AS 115 Revenue Flow and Asset Ageing.
+            - 'Comparison Matrix' allows side-by-side ratio analysis.
+        4. User Flow: Starts with a high-level summary, then allows drill-down into specific regulatory layers.
+    -->
+
+    <!-- Visualization & Content Choices: 
+        - Goal: Show RBI SBR Layers -> Method: Interactive CSS Pyramid with JS details -> Justification: Better spatial understanding of regulatory strictness.
+        - Goal: ECL Staging (NBFC) -> Method: Donut Chart (Chart.js) -> Justification: Shows proportion of risk buckets (Stage 1-3).
+        - Goal: Contract Balances (Real Estate) -> Method: Bar Chart (Chart.js) -> Justification: Visualizes drivers of change in unbilled revenue/advances.
+        - Goal: Ratio Comparison -> Method: Interactive Selection Table -> Justification: Directly compares Division II vs Division III mandates.
+        - NO SVG/Mermaid: All icons/diagrams built with Tailwind CSS/Canvas.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <nav class="sticky top-0 z-50 bg-white shadow-sm border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white font-bold">D</div>
+                    <span class="font-bold text-xl tracking-tight">DisclosureHub<span class="text-indigo-600">.in</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <button onclick="switchSector('nbfc')" id="btn-nbfc" class="px-3 py-2 text-sm font-medium active-tab transition-all">NBFC (Financial)</button>
+                    <button onclick="switchSector('realty')" id="btn-realty" class="px-3 py-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all">Real Estate (Corporate)</button>
+                    <button onclick="switchSector('compare')" id="btn-compare" class="px-3 py-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all">Ratio Comparison</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="bg-white border-b border-slate-100 py-12 mb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 id="main-title" class="text-4xl font-extrabold text-slate-900 sm:text-5xl">NBFC Disclosure Framework</h1>
+            <p id="main-subtitle" class="mt-4 text-xl text-slate-600 max-w-3xl">Comprehensive statutory, accounting, and supervisory mandates for listed Non-Banking Financial Companies under Schedule III Division III and RBI SBR.</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+
+        <!-- NBFC SECTION -->
+        <section id="section-nbfc" class="space-y-12">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-card p-6 rounded-xl col-span-1 md:col-span-2">
+                    <h3 class="text-lg font-bold mb-4 text-indigo-900 uppercase tracking-wider text-xs">Statutory Context: Division III</h3>
+                    <p class="text-slate-700 leading-relaxed">
+                        Listed NBFCs must prioritize <span class="font-semibold text-indigo-600">Liquidity-based presentation</span>. Unlike traditional firms, assets and liabilities are bifurcated into <span class="bg-indigo-50 px-1">Financial</span> and <span class="bg-slate-50 px-1">Non-Financial</span> categories on the face of the balance sheet. This structure highlights the intermediation role of financial institutions.
+                    </p>
+                    <div class="mt-6 flex flex-wrap gap-4">
+                        <div class="flex items-center gap-2 text-sm text-slate-600">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span> Rounded by Income (>100Cr)
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-600">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span> Ind AS 109 Compliant
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-xl bg-indigo-900 text-white">
+                    <h3 class="text-lg font-bold mb-4 border-b border-indigo-700 pb-2">Key Disclosure Pivot</h3>
+                    <p class="text-indigo-100 text-sm">Notes must detail the recovery/settlement of assets expected within 12 months vs beyond 12 months, mapping the institution's cash flow durability.</p>
+                    <div class="mt-8 text-center">
+                        <div class="text-3xl font-bold">12 Months</div>
+                        <div class="text-xs text-indigo-300 uppercase tracking-tighter">Crucial Maturity Threshold</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-bold">Asset Quality & ECL Staging</h2>
+                    <p class="text-slate-600">Implementation of the Expected Credit Loss (ECL) model requires granular classification based on credit risk progression.</p>
+                    <div class="space-y-4">
+                        <div onclick="updateECLChart(0)" class="cursor-pointer p-4 rounded-lg border-l-4 border-emerald-500 bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <h4 class="font-bold text-emerald-700">Stage I: Standard</h4>
+                            <p class="text-xs text-slate-500">Low credit risk; 12-month ECL recognized.</p>
+                        </div>
+                        <div onclick="updateECLChart(1)" class="cursor-pointer p-4 rounded-lg border-l-4 border-amber-500 bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <h4 class="font-bold text-amber-700">Stage II: SICR</h4>
+                            <p class="text-xs text-slate-500">Significant Increase in Credit Risk; Lifetime ECL recognized.</p>
+                        </div>
+                        <div onclick="updateECLChart(2)" class="cursor-pointer p-4 rounded-lg border-l-4 border-rose-500 bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <h4 class="font-bold text-rose-700">Stage III: Credit Impaired</h4>
+                            <p class="text-xs text-slate-500">Default or high risk; Lifetime ECL recognized.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-xl flex flex-col items-center">
+                    <h4 class="text-sm font-bold text-slate-500 mb-4 uppercase">Illustrative Portfolio Staging</h4>
+                    <div class="chart-container">
+                        <canvas id="eclChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 text-white rounded-2xl p-8 overflow-hidden relative">
+                <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div>
+                        <h2 class="text-3xl font-bold mb-4">RBI Scale-Based Regulation</h2>
+                        <p class="text-slate-400 mb-6">A hierarchical framework where regulatory strictness increases with the entity's systemic importance. Disclosures are progressive.</p>
+                        <div id="pyramid-details" class="bg-slate-800 p-6 rounded-xl border border-slate-700 min-h-[150px]">
+                            <h4 id="pyramid-title" class="text-indigo-400 font-bold mb-2">Hover over the Pyramid</h4>
+                            <p id="pyramid-content" class="text-sm text-slate-300">Click or hover over the different layers to see specific supervisory requirements under the SBR framework.</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <div onmouseover="updatePyramid('top')" class="pyramid-level w-32 h-16 bg-indigo-500 flex items-center justify-center cursor-help text-xs font-bold">TOP LAYER</div>
+                        <div onmouseover="updatePyramid('upper')" class="pyramid-level w-48 h-16 bg-indigo-600 flex items-center justify-center cursor-help text-xs font-bold">UPPER LAYER</div>
+                        <div onmouseover="updatePyramid('middle')" class="pyramid-level w-64 h-16 bg-indigo-700 flex items-center justify-center cursor-help text-xs font-bold">MIDDLE LAYER</div>
+                        <div onmouseover="updatePyramid('base')" class="pyramid-level w-80 h-16 bg-indigo-800 flex items-center justify-center cursor-help text-xs font-bold">BASE LAYER</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REAL ESTATE SECTION -->
+        <section id="section-realty" class="hidden space-y-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass-card p-6 rounded-xl">
+                    <h3 class="text-lg font-bold mb-4 text-indigo-900 uppercase tracking-wider text-xs">Revenue Paradigm: Ind AS 115</h3>
+                    <p class="text-slate-700 mb-4">Real estate developers have shifted from the POCM (percentage completion) method to a strict <span class="font-bold">Control-Transfer Model</span>.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 bg-indigo-100 rounded text-indigo-600 flex items-center justify-center text-xs font-bold">1</div>
+                            <div class="text-sm">Identify performance obligations (Unit Sale vs Development Fee).</div>
+                        </div>
+                        <div class="flex items-start gap-3 border-t pt-4">
+                            <div class="w-6 h-6 bg-indigo-100 rounded text-indigo-600 flex items-center justify-center text-xs font-bold">2</div>
+                            <div class="text-sm font-semibold">Point in Time vs Over Time:</div>
+                        </div>
+                        <p class="text-xs text-slate-500 pl-9">Requires 'No Alternative Use' and 'Enforceable Right to Payment' for Over-Time recognition.</p>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-xl">
+                    <h4 class="text-sm font-bold text-slate-500 mb-4 uppercase">Contract Balances Interaction</h4>
+                    <div class="chart-container">
+                        <canvas id="realtyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
+                    <h4 class="font-bold text-slate-900 mb-2">Immovable Property</h4>
+                    <p class="text-sm text-slate-600">Mandatory disclosure of title deeds not held in the company's name, including relationship with promoters/directors.</p>
+                </div>
+                <div class="p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
+                    <h4 class="font-bold text-slate-900 mb-2">CWIP Ageing</h4>
+                    <p class="text-sm text-slate-600">Capital Work-in-Progress must be aged. Projects "Temporarily Suspended" must be explicitly flagged with cost overrun analysis.</p>
+                </div>
+                <div class="p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
+                    <h4 class="font-bold text-slate-900 mb-2">REIT Specialization</h4>
+                    <p class="text-sm text-slate-600">Focuses on NDCF (Net Distributable Cash Flow) and Fair Value comparison instead of standard layering limits.</p>
+                </div>
+            </div>
+
+            <div class="bg-indigo-50 border border-indigo-100 p-8 rounded-2xl">
+                <h3 class="text-xl font-bold mb-6">Land Portfolio Tracking</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-indigo-700 uppercase bg-indigo-100/50">
+                            <tr>
+                                <th class="px-4 py-3">Asset Class</th>
+                                <th class="px-4 py-3">Title Holder</th>
+                                <th class="px-4 py-3">Relationship</th>
+                                <th class="px-4 py-3">Reason for Variance</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-indigo-100">
+                            <tr>
+                                <td class="px-4 py-3 font-medium">Project Land</td>
+                                <td class="px-4 py-3">Promoter Group</td>
+                                <td class="px-4 py-3">Affiliate</td>
+                                <td class="px-4 py-3 italic">Joint Development Agreement</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium">Commercial Asset</td>
+                                <td class="px-4 py-3">Director</td>
+                                <td class="px-4 py-3">Key Personnel</td>
+                                <td class="px-4 py-3 italic">Historical Title Transition</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- COMPARISON SECTION -->
+        <section id="section-compare" class="hidden space-y-8">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-2xl font-bold mb-6">Financial Ratio Mandates</h2>
+                <p class="text-slate-600 mb-8">Companies must explain variances >25% compared to the previous year. NBFCs (Division III) use liquidity-focused ratios, while Developers (Division II) use operational efficiency ratios.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-0 border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="bg-slate-50 p-6 border-r border-slate-200">
+                        <h4 class="font-bold text-indigo-700 mb-4 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-indigo-600"></span> Division III (NBFC)
+                        </h4>
+                        <ul class="space-y-3 text-sm">
+                            <li class="flex justify-between border-b pb-2"><span>Capital Adequacy (CRAR)</span> <span class="font-bold">Required</span></li>
+                            <li class="flex justify-between border-b pb-2"><span>Tier I / Tier II Ratios</span> <span class="font-bold">Required</span></li>
+                            <li class="flex justify-between border-b pb-2"><span>Liquidity Coverage (LCR)</span> <span class="font-bold">Required</span></li>
+                            <li class="flex justify-between text-slate-400"><span>Inventory Turnover</span> <span>N/A</span></li>
+                            <li class="flex justify-between text-slate-400"><span>Current Ratio</span> <span>N/A</span></li>
+                        </ul>
+                    </div>
+                    <div class="p-6">
+                        <h4 class="font-bold text-emerald-700 mb-4 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-600"></span> Division II (Real Estate)
+                        </h4>
+                        <ul class="space-y-3 text-sm">
+                            <li class="flex justify-between border-b pb-2"><span>Current Ratio</span> <span class="font-bold">Required</span></li>
+                            <li class="flex justify-between border-b pb-2"><span>Debt-Equity Ratio</span> <span class="font-bold">Required</span></li>
+                            <li class="flex justify-between border-b pb-2"><span>Inventory Turnover</span> <span class="font-bold">Required</span></li>
+                            <li class="flex justify-between border-b pb-2"><span>Debt Service Coverage (DSCR)</span> <span class="font-bold">Required</span></li>
+                            <li class="flex justify-between border-b pb-2"><span>Net Profit Ratio</span> <span class="font-bold">Required</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass-card p-6 rounded-xl">
+                    <h3 class="font-bold mb-4">ESG/BRSR Overlap</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-slate-50 rounded-lg">
+                            <span class="text-xs font-bold text-indigo-600 uppercase">NBFC Priority</span>
+                            <p class="text-sm font-semibold">Data Privacy & Green Lending</p>
+                            <p class="text-xs text-slate-500">Cyber-security metrics and impact funding.</p>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-lg">
+                            <span class="text-xs font-bold text-emerald-600 uppercase">Realty Priority</span>
+                            <p class="text-sm font-semibold">Sourcing & Site Safety</p>
+                            <p class="text-xs text-slate-500">Cement/Steel sourcing and worker safety indices.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-xl">
+                    <h3 class="font-bold mb-4">SEBI LODR Governance</h3>
+                    <p class="text-sm text-slate-600 mb-4">Common mandates for both sectors under the listing agreement:</p>
+                    <ul class="text-sm space-y-2 list-disc pl-5 text-slate-700">
+                        <li>Board Skills Matrix and Diversity disclosures.</li>
+                        <li>Detailed reasons for Independent Director resignations.</li>
+                        <li>Related Party Transactions (RPT) with >10% stakeholders.</li>
+                        <li>Quarterly vs Books reconciliation for borrowings against current assets.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-50 border-t border-slate-200 py-12 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-slate-500 text-sm italic">Summary based on SEBI, RBI, MCA, and Ind AS reporting standards for listed entities in India.</p>
+        </div>
+    </footer>
+
+    <script>
+        let eclChart, realtyChart;
+
+        function initCharts() {
+            // ECL Donut Chart
+            const eclCtx = document.getElementById('eclChart').getContext('2d');
+            eclChart = new Chart(eclCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Stage I', 'Stage II', 'Stage III'],
+                    datasets: [{
+                        data: [85, 10, 5],
+                        backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { enabled: true }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Realty Bar Chart
+            const realtyCtx = document.getElementById('realtyChart').getContext('2d');
+            realtyChart = new Chart(realtyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Trade Receivables', 'Contract Assets', 'Contract Liabilities'],
+                    datasets: [{
+                        label: 'Opening Balance (Cr)',
+                        data: [120, 45, 90],
+                        backgroundColor: '#e2e8f0'
+                    }, {
+                        label: 'Closing Balance (Cr)',
+                        data: [135, 60, 80],
+                        backgroundColor: '#6366f1'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function updateECLChart(index) {
+            // Simulated dynamic interaction
+            const data = [
+                [90, 7, 3], // Normal focus
+                [75, 20, 5], // Risk focus
+                [80, 10, 10] // Impaired focus
+            ];
+            eclChart.data.datasets[0].data = data[index];
+            eclChart.update();
+        }
+
+        function updatePyramid(layer) {
+            const title = document.getElementById('pyramid-title');
+            const content = document.getElementById('pyramid-content');
+            
+            const info = {
+                'top': { title: 'Top Layer (NBFC-TL)', text: 'Equivalent to bank-level strictness. Ad hoc supervisory requirements based on specific RBI concerns.' },
+                'upper': { title: 'Upper Layer (NBFC-UL)', text: 'Entities with enhanced governance. Must maintain CET 1 capital of 9% and follow strict internal audit trails.' },
+                'middle': { title: 'Middle Layer (NBFC-ML)', text: 'Systemically important NBFCs. Harmonized 90-day NPA classification and 15% CRAR requirements.' },
+                'base': { title: 'Base Layer (NBFC-BL)', text: 'Non-systemic entities. Basic board policies required with a 9% CRAR minimum.' }
+            };
+
+            title.innerText = info[layer].title;
+            content.innerText = info[layer].text;
+            title.classList.add('animate-pulse');
+            setTimeout(() => title.classList.remove('animate-pulse'), 500);
+        }
+
+        function switchSector(sector) {
+            const sections = ['nbfc', 'realty', 'compare'];
+            sections.forEach(s => {
+                document.getElementById(`section-${s}`).classList.add('hidden');
+                document.getElementById(`btn-${s}`).classList.remove('active-tab');
+                document.getElementById(`btn-${s}`).classList.add('text-slate-500');
+            });
+
+            document.getElementById(`section-${sector}`).classList.remove('hidden');
+            document.getElementById(`btn-${sector}`).classList.add('active-tab');
+            document.getElementById(`btn-${sector}`).classList.remove('text-slate-500');
+
+            const headerTitle = document.getElementById('main-title');
+            const headerSub = document.getElementById('main-subtitle');
+
+            if (sector === 'nbfc') {
+                headerTitle.innerText = "NBFC Disclosure Framework";
+                headerSub.innerText = "Comprehensive statutory, accounting, and supervisory mandates for listed Non-Banking Financial Companies under Schedule III Division III and RBI SBR.";
+            } else if (sector === 'realty') {
+                headerTitle.innerText = "Real Estate Disclosure Framework";
+                headerSub.innerText = "Regulatory and financial reporting standards for listed developers, focusing on Ind AS 115 revenue recognition and Schedule III Division II compliance.";
+            } else {
+                headerTitle.innerText = "Cross-Sector Ratio Matrix";
+                headerSub.innerText = "Side-by-side comparison of mandatory financial ratios and disclosure variances between Division II and Division III entities.";
+            }
+
+            // Ensure charts resize correctly
+            eclChart.resize();
+            realtyChart.resize();
+        }
+
+        window.onload = initCharts;
+    </script>
+</body>
+</html>
